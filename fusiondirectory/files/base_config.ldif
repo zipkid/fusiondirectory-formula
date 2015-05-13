@@ -1,0 +1,116 @@
+dn: {{ ldap['base'] }}
+o: {{ ldap['domain'] }}
+dc: {{ ldap['dc_name'] }}
+ou: {{ ldap['dc_name'] }}
+description: {{ ldap['dc_name'] }}
+objectClass: dcObject
+objectClass: organization
+objectClass: gosaDepartment
+objectClass: gosaAcl
+gosaAclEntry: 0:subtree:{{ salt['ssha.b64e']('cn=admin,ou=aclroles,'+ldap['base']) }}:{{ salt['ssha.b64e']('uid=admin,ou=people,'+ldap['base']) }}
+
+# configs, {{ ldap['domain'] }}
+dn: ou=configs,{{ ldap['base'] }}
+objectClass: organizationalUnit
+ou: configs
+
+# people, {{ ldap['domain'] }}
+dn: ou=people,{{ ldap['base'] }}
+objectClass: organizationalUnit
+ou: people
+
+# groups, {{ ldap['domain'] }}
+dn: ou=groups,{{ ldap['base'] }}
+objectClass: organizationalUnit
+ou: groups
+
+# aclroles, {{ ldap['domain'] }}
+dn: ou=aclroles,{{ ldap['base'] }}
+objectClass: organizationalUnit
+ou: aclroles
+
+# fusiondirectory, configs, {{ ldap['domain'] }}
+dn: cn=fusiondirectory,ou=configs,{{ ldap['base'] }}
+objectClass: fusionDirectoryConf
+fdPasswordDefaultHash: ssha
+fdUserRDN: ou=people
+fdGroupRDN: ou=groups
+fdAclRoleRDN: ou=aclroles
+fdGidNumberBase: 1100
+fdUidNumberBase: 1100
+fdAccountPrimaryAttribute: uid
+fdLoginAttribute: uid
+fdTimezone: Europe/Brussels
+fdRfc2307bis: FALSE
+fdPersonalTitleInDN: FALSE
+fdStrictNamingRules: TRUE
+fdHandleExpiredAccounts: FALSE
+fdEnableSnapshots: TRUE
+fdSnapshotBase: ou=snapshots,{{ ldap['base'] }}
+fdLanguage:
+fdTheme: default
+fdPrimaryGroupFilter: FALSE
+fdModificationDetectionAttribute: entryCSN
+fdCopyPaste: TRUE
+fdListSummary: TRUE
+fdLdapStats: FALSE
+fdWarnSSL: TRUE
+fdForceSSL: FALSE
+fdSchemaCheck: TRUE
+fdLogging: TRUE
+fdDisplayErrors: FALSE
+fdSessionLifeTime: 1800
+fdDebugLevel: 0
+cn: fusiondirectory
+
+# {{ fdc['admin_user'] }}, people, {{ ldap['domain'] }}
+dn: uid={{ fdc['admin_user'] }},ou=people,{{ ldap['base'] }}
+objectClass: top
+objectClass: person
+objectClass: gosaAccount
+objectClass: organizationalPerson
+objectClass: inetOrgPerson
+givenName: System
+sn: Administrator
+cn: System Administrator-admin
+uid: {{ fdc['admin_user'] }}
+userPassword: {{ salt['ssha.makeSecret'](fdc['admin_pwd'],fdc['pwd_salt']) }}
+
+# admin, aclroles, {{ ldap['domain'] }}
+dn: cn=admin,ou=aclroles,{{ ldap['base'] }}
+cn: admin
+description: Give all rights on all objects
+objectClass: top
+objectClass: gosaRole
+gosaAclTemplate: 0:all;cmdrw
+
+# manager, aclroles, {{ ldap['domain'] }}
+dn: cn=manager,ou=aclroles,{{ ldap['base'] }}
+cn: manager
+description: Give all rights on users in the given branch
+objectClass: top
+objectClass: gosaRole
+gosaAclTemplate: 0:user/password;cmdrw,user/user;cmdrw,user/posixAccount;cmdrw
+
+# editowninfos, aclroles, {{ ldap['domain'] }}
+dn: cn=editowninfos,ou=aclroles,{{ ldap['base'] }}
+cn: editowninfos
+description: Allow users to edit their own information (main tab and posix use only on base)
+objectClass: top
+objectClass: gosaRole
+gosaAclTemplate: 0:user/posixAccount;srw,user/user;srw
+
+# systems, {{ ldap['domain'] }}
+dn: ou=systems,{{ ldap['base'] }}
+objectClass: organizationalUnit
+ou: systems
+
+# configs, systems, {{ ldap['domain'] }}
+dn: ou=configs,ou=systems,{{ ldap['base'] }}
+objectClass: organizationalUnit
+ou: configs
+
+# fusiondirectory, configs, systems, {{ ldap['domain'] }}
+dn: ou=fusiondirectory,ou=configs,ou=systems,{{ ldap['base'] }}
+objectClass: organizationalUnit
+ou: fusiondirectory
